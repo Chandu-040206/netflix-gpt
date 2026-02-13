@@ -4,15 +4,14 @@ import checkvalidData from "../utils/validate";
 import { auth } from "../utils/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
+import {DEFAULT_PROFILE,BACKGROUND_IMAGE} from "../utils/constant"
 
 const Login = () => {
 
     const [isSignIn, setIsSignIn] = useState(true);
     const [errorMessage, setErrorMessage] = useState(null);
-    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const toggleSignIn = () => {
@@ -43,14 +42,14 @@ const Login = () => {
                     // Signed up 
                     const user = userCredential.user;
                     updateProfile(user, {
-                        displayName: name.current?.value, photoURL: "https://avatars.githubusercontent.com/u/194082354?v=4"
+                        displayName: name.current?.value, 
+                        photoURL: DEFAULT_PROFILE
                     }).then(() => {
                         const {uid,email,displayName,photoURL} = auth.currentUser;
                         dispatch(
                             addUser(
                                 {uid:uid,email:email,displayName:displayName,photoURL:photoURL})
                             );
-                        navigate("/browse");
                     }).catch((error) => {
                         setErrorMessage(error.message);
                     });
@@ -69,8 +68,6 @@ const Login = () => {
                 .then((userCredential) => {
                     // Signed in 
                     const user = userCredential.user;
-                    console.log(user);
-                    navigate("/browse");
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -85,7 +82,7 @@ const Login = () => {
         <div >
             <Header />
             <div className="absolute">
-                <img src="https://assets.nflxext.com/ffe/siteui/vlv3/e8136cfe-c5b7-464f-8c26-d68d676e0916/web/IN-en-20251229-TRIFECTA-perspective_c50c689c-0d42-413b-bd09-f4fc62fbec13_large.jpg"
+                <img src={BACKGROUND_IMAGE}
                     alt="bgimage" />
             </div>
             <form onSubmit={(e) => e.preventDefault()} className="bg-black bg-opacity-80 w-[450px] mx-auto absolute my-28 left-0 right-0 text-white p-14 rounded">

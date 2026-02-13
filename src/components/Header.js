@@ -1,43 +1,91 @@
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
-import { useDispatch,useSelector } from "react-redux";
-import { removeUser } from "../utils/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { addUser, removeUser } from "../utils/userSlice";
+import { LOGO, SUPPORTED_LANGUAGES } from "../utils/constant";
+import { toggleGptSearchView } from "../utils/gptSlice";
+import {changeLanguage} from "../utils/configSlice"
 
 const Header = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((store) => store.user);
+  const showGptSearch = useSelector(store=>store.gpt.showGptSearch);
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const user = useSelector(store => store.user)
+  const handleSignout = () => {
+    signOut(auth)
+      .then(() => dispatch(removeUser()))
+      .catch(() => navigate("/error"));
+  };
 
-    const handleSignout = () => {
-        signOut(auth).then(() => {
-            navigate("/");
-            dispatch(removeUser());
-        }).catch((error) => {
-            navigate("/error");
-        });
-    }
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName, photoURL } = user;
+        dispatch(addUser({ uid, email, displayName, photoURL }));
+        navigate("/browse");
+      } else {
+        dispatch(removeUser());
+        navigate("/");
+      }
+    });
 
-    return (
-        <div className="z-10 fixed top-0 left-0 px-8 py-4 bg-gradient-to-b from-black w-full flex items-center justify-between">
-            <img
-                className="w-32"
-                src="https://help.nflxext.com/helpcenter/OneTrust/oneTrust_production_2025-12-03/consent/87b6a5c0-0104-4e96-a291-092c11350111/019ae4b5-d8fb-7693-90ba-7a61d24a8837/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
-                alt="Netflix Logo"
-            />
+    return () => unsubscribe();
+  }, []);
 
-            {user && <div className="flex ">
-                <img 
-                // src={user.photoURL}
-                src="https://occ-0-4994-2164.1.nflxso.net/dnm/api/v6/vN7bi_My87NPKvsBoib006Llxzg/AAAABTZ2zlLdBVC05fsd2YQAR43J6vB1NAUBOOrxt7oaFATxMhtdzlNZ846H3D8TZzooe2-FT853YVYs8p001KVFYopWi4D4NXM.png?r=229"
-                    alt="logout" />
-                <button onClick={handleSignout} className="border-solid border-black bg-blue-300 px-1">
-                    SignOut
-                </button>
-            </div>}
+  const handleGptSearch = ()=>{
+    dispatch(toggleGptSearchView());
+  };
+
+  const handleLanguage = (e)=>{
+    dispatch(changeLanguage(e.target.value))
+  }
+
+  return (
+    <div className="
+      fixed top-0 left-0 w-full
+      flex items-center justify-between
+      px-8 py-4
+      z-50
+      bg-gradient-to-b from-black via-black/70 to-transparent
+    ">
+      <img className="w-36" src={LOGO} alt="Netflix Logo" />
+
+      {user && (
+        <div className="flex items-center">
+          {
+            showGptSearch && <select className="font-serif rounded-lg px-2 py-1 mr-16 bg-gray-900
+           text-white border border-solid border-white" onChange={handleLanguage}>
+            {SUPPORTED_LANGUAGES.map(lang => <option key={lang.identifier} value={lang.identifier}>{lang.name}</option>)}
+          </select>
+          }
+          <button 
+          onClick={handleGptSearch}
+          className="bg-purple-400 px-3 py-1 mr-20 rounded font-serif ">
+            {showGptSearch?"Home":"Search"} 
+          </button>
+          <img
+            className="w-8 h-8 "
+            src={user.photoURL}
+            alt="profile"
+          />
+          <button
+            onClick={handleSignout}
+            className="
+              text-white text-m
+              bg-red-600 px-3 py-1 rounded
+              hover:bg-red-700
+              font-serif
+            "
+          >
+            Sign Out
+          </button>
         </div>
-    )
-}
+      )}
+    </div>
+  );
+};
 
 export default Header;
