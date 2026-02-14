@@ -7,17 +7,14 @@ const VideoTitle = ({ title, overview }) => {
       
       <div className="max-w-xl">
         
-        {/* Title */}
         <h1 className="text-5xl font-bold">
           {title}
         </h1>
 
-        {/* Overview */}
         <p className="mt-4 text-gray-200 leading-relaxed line-clamp-3">
           {overview}
         </p>
 
-        {/* Buttons */}
         <div className="flex gap-4 mt-6">
           
           <button className="

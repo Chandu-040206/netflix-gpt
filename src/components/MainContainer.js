@@ -14,10 +14,8 @@ const MainContainer = () => {
 
   return (
     <div className="relative h-screen w-full">
-      {/* Background Trailer */}
       <VideoBackground movieId={id} />
 
-      {/* Title Overlay */}
       <div className="absolute bottom-40 left-12 z-20 max-w-xl">
         <VideoTitle
           title={original_title}
